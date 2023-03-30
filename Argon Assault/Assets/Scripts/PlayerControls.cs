@@ -1,19 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerControls : MonoBehaviour
 {
-    [SerializeField] float xVelocity = 25f;
-    [SerializeField] float yVelocity = 25f;
-    [SerializeField] float xRange = 10f;
-    [SerializeField] float yRange = 7f;
+    [Header("General Setup Settings")]
+    [Tooltip("How fast ship moves left to right")] [SerializeField] float xVelocity = 25f;
+    [Tooltip("How fast ship moves up to down")] [SerializeField] float yVelocity = 25f;
+    [Tooltip("How far the ship can move horizontally")] [SerializeField] float xRange = 10f;
+    [Tooltip("How far the ship can move vertically")] [SerializeField] float yRange = 7f;
+    [Tooltip("How quickly the ship rotates while moving")] [SerializeField] float rotationFactor = 0.7f;
+    [Header("Screen-position Based Tuning")]
     [SerializeField] float positionPitchFactor = -1f;
-    [SerializeField] float controlPitchFactor = -10f;
     [SerializeField] float positionYawFactor = 2f;
+    [Header("Player input Based Tuning")]
+    [SerializeField] float controlPitchFactor = -10f;
     [SerializeField] float controlRollFactor = -20f;
-    [SerializeField] float rotationFactor = 0.7f;
+    [Header("Laser array")]
+    [Tooltip("Add all player lasers here")] [SerializeField] GameObject[] lasers;
 
     InputAction movement;
     InputAction fire;
@@ -21,20 +24,11 @@ public class PlayerControls : MonoBehaviour
 
     // Called before Start, check Unity call flowsheet
     // https://docs.unity3d.com/Manual/ExecutionOrder.html
-    void OnEnable()
-    {
-        movement.Enable();
-        fire.Enable();
-    }
-
-    void OnDisable()
-    {
-        movement.Disable();
-        fire.Disable();
-    }
 
     void Start()
     {
+        // Get the input action from the PlayerInput component
+        // The PlayerInput component is an Input Action Asset that is modified in the Unity editor itself
         movement = GetComponent<PlayerInput>().actions["Movement"];
         fire = GetComponent<PlayerInput>().actions["Fire"];
     }
@@ -51,9 +45,6 @@ public class PlayerControls : MonoBehaviour
     {
         xThrow = movement.ReadValue<Vector2>().x;
         yThrow = movement.ReadValue<Vector2>().y;
-
-        Debug.Log(xThrow);
-        Debug.Log(yThrow);
 
         float xOffset = xThrow * xVelocity * Time.deltaTime;
         float rawXPos = transform.localPosition.x + xOffset;
@@ -86,28 +77,23 @@ public class PlayerControls : MonoBehaviour
 
     void ProcessFiring()
     {
-        ParticleSystem[] lasers = GetComponentsInChildren<ParticleSystem>();
         if (fire.IsPressed())
         {
-            foreach (ParticleSystem laser in lasers)
-            {
-                if (!laser.isPlaying)
-                {
-                    laser.Play();
-                }
-            }
-
+            SetLasersActive(true);
         }
         else
         {
-            foreach (ParticleSystem laser in lasers)
-            {
-                if (laser.isPlaying)
-                {
-                    laser.Stop();
-                }
-            }
+            SetLasersActive(false);
+
         }
     }
-
+    
+    void SetLasersActive(bool isActive)
+    {
+        foreach (GameObject laser in lasers)
+        {
+            var emissionModule = laser.GetComponent<ParticleSystem>().emission;
+            emissionModule.enabled = isActive;
+        }
+    }
 }
