@@ -1,14 +1,31 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
+    [SerializeField] float loadDelay = 1f;
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log(this.name + " triggered " + other.gameObject.name);
+        StartCrashSequence();
     }
 
-    void OnCollisionEnter(Collision other)
+    // void OnCollisionEnter(Collision other)
+    // {
+    //     Debug.Log(this.name + " collided with " + other.gameObject.name);
+    //     StartCrashSequence();
+    // }
+
+    void StartCrashSequence()
     {
-        Debug.Log(this.name + " collided with " + other.gameObject.name);
+        GetComponent<PlayerControls>().enabled = false;
+        // GetComponent<ParticleSystem>().Play();
+        Invoke("RestartLevel", loadDelay);
+    }
+
+    void RestartLevel()
+    {
+        // Load the current scene
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentSceneIndex);
     }
 }
