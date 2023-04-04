@@ -4,21 +4,18 @@ using UnityEngine.SceneManagement;
 public class CollisionHandler : MonoBehaviour
 {
     [SerializeField] float loadDelay = 1f;
+    [SerializeField] ParticleSystem deathFX;
     void OnTriggerEnter(Collider other)
     {
         StartCrashSequence();
     }
 
-    // void OnCollisionEnter(Collision other)
-    // {
-    //     Debug.Log(this.name + " collided with " + other.gameObject.name);
-    //     StartCrashSequence();
-    // }
-
     void StartCrashSequence()
     {
+        deathFX.Play();
         GetComponent<PlayerControls>().enabled = false;
-        // GetComponent<ParticleSystem>().Play();
+        GetComponent<MeshRenderer>().enabled = false;
+        GetComponent<BoxCollider>().enabled = false;
         Invoke("RestartLevel", loadDelay);
     }
 
